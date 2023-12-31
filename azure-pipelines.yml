@@ -11,6 +11,7 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   entryAssemblyPath: '$(Build.SourcesDirectory)/src/Hinz.Core.Reporting/bin/Release/Hinz.Core.Reporting.dll'
+  packageVersion: ''
 
 steps:
 - task: NuGetToolInstaller@0
@@ -41,6 +42,7 @@ steps:
     script: |
       $packageVersion = [System.Reflection.Assembly]::LoadFrom("$(entryAssemblyPath)").GetName().Version.ToString(3)
       Write-Host "##vso[tas.setvariable variable=packageVersion]$packageVersion"
+
 
 - task: NuGetCommand@2
   displayName: 'NuGet pack'
