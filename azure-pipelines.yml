@@ -43,6 +43,11 @@ steps:
       $packageVersion = [System.Reflection.Assembly]::LoadFrom("$(entryAssemblyPath").GetName().Version.ToString(3)
       Write-Host "##vso[tas.setvariable variable=packageVersion]$packageVersion"
 
+- task: OctoInstaller@4
+  displayName: OctoPack install
+  inputs:
+    version: 'embedded'
+
 - task: OctopusPack@4
   displayName: OctoPack create
   inputs:
