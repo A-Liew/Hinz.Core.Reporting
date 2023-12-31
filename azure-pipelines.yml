@@ -1,0 +1,62 @@
+name: '$(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)'
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+  entryAssemblyFolder: '$(Build.SourcesDirectory)/publish'
+  entryAssemblyPath: '$(entryAssemblyFolder)/Hinz.Core.Reporting.dll'
+
+steps:
+- task: NuGetToolInstaller@0
+  inputs:
+    checkLatest: true
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+    vstsFeed: 'HinzTech'
+    versioningScheme: 'off'
+
+- task: MSBuild@1
+  displayName: 'Build'
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+    msbuildArguments: '-m'
+
+- task: PowerShell@2
+  displayName: 'PowerShell script - Get version number from assembly'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $packageVersion = [System.Reflection.Assembly]::LoadFrom("$(entryAssemblyPath").GetName().Version.ToString(3)
+      Write-Host "##vso[tas.setvariable variable=packageVersion]$packageVersion"
+
+- task: OctopusPack@4
+  displayName: OctoPack create
+  inputs:
+    PackageId: '$Build.DefinitionName)'
+    PackageFormat: 'NuPkg'
+    SourcePath: '$(entryAssemblyFolder)'
+    OutputPath: '$(BUild.ArtifactStagingDirectory)'
+    PackageVersion: '$(packageVersion)'
+
+- task: NuGetCommand@2
+  displayName: 'NuGet push'
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'HinzTech'
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
