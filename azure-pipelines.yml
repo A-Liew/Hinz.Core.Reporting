@@ -41,8 +41,7 @@ steps:
     targetType: 'inline'
     script: |
       $packageVersion = [System.Reflection.Assembly]::LoadFrom("$(entryAssemblyPath)").GetName().Version.ToString(3)
-      Write-Host "##vso[tas.setvariable variable=packageVersion]$packageVersion"
-
+      Write-Host "##vso[task.setvariable variable=packageVersion]$packageVersion"
 
 - task: NuGetCommand@2
   displayName: 'NuGet pack'
