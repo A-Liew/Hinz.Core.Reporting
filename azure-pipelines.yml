@@ -10,8 +10,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
-  entryAssemblyFolder: '$(Build.SourcesDirectory)/publish'
-  entryAssemblyPath: '$(entryAssemblyFolder)/Hinz.Core.Reporting.dll'
+  entryAssemblyPath: '$(Build.SourcesDirectory)/src/Hinz.Core.Reporting/bin/Release/Hinz.Core.Reporting.dll'
 
 steps:
 - task: NuGetToolInstaller@0
@@ -43,13 +42,6 @@ steps:
       $packageVersion = [System.Reflection.Assembly]::LoadFrom("$(entryAssemblyPath)").GetName().Version.ToString(3)
       Write-Host "##vso[tas.setvariable variable=packageVersion]$packageVersion"
 
-- task: MSBuild@1
-  displayName: 'Build'
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-    msbuildArguments: '-m'
 
 # - task: NuGetCommand@2
 #   displayName: 'NuGet push'
